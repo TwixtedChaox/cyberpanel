@@ -163,7 +163,8 @@ sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgr
 
 ## ✉️ Managing Email Aliases
 
-Use the `mailUtilities.py` helper to create or remove aliases:
+Email aliases can be managed from the CyberPanel UI under **Email → Email Aliases**.
+You can also use the `mailUtilities.py` helper to create or remove aliases:
 
 ```bash
 python plogical/mailUtilities.py createEmailAlias --alias sales@example.com --destination user@example.com

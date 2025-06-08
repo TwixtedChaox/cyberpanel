@@ -1552,3 +1552,86 @@ app.controller('EmailLimitsNew', function ($scope, $http) {
 
 });
 /* Java script for EmailLimitsNew */
+/* Java script for managing email aliases */
+app.controller('emailAliases', function ($scope, $http) {
+    $scope.aliasBox = true;
+    $scope.aliasLoading = true;
+    $scope.aliasError = true;
+    $scope.aliasSuccess = true;
+    $scope.couldNotConnect = true;
+
+    $scope.loadAliases = function () {
+        $scope.aliasBox = true;
+        $scope.aliasLoading = false;
+        $scope.aliasError = true;
+        $scope.aliasSuccess = true;
+        $scope.couldNotConnect = true;
+
+        var url = "/email/fetchEmailAliases";
+        var data = { domain: $scope.selectedDomain };
+        var config = { headers: { 'X-CSRFToken': getCookie('csrftoken') } };
+        $http.post(url, data, config).then(function(response){
+            if (response.data.fetchStatus === 1) {
+                $scope.records = response.data.data ? JSON.parse(response.data.data) : [];
+                $scope.aliasBox = false;
+                $scope.aliasLoading = true;
+            } else {
+                $scope.aliasBox = true;
+                $scope.aliasLoading = true;
+                $scope.aliasError = false;
+                $scope.errorMessage = response.data.error_message;
+            }
+        }, function(){
+            $scope.aliasBox = true;
+            $scope.aliasLoading = true;
+            $scope.couldNotConnect = false;
+        });
+    };
+
+    $scope.createAlias = function () {
+        $scope.aliasLoading = false;
+        var url = "/email/submitEmailAliasCreation";
+        var data = { alias: $scope.alias, destination: $scope.destination };
+        var config = { headers: { 'X-CSRFToken': getCookie('csrftoken') } };
+        $http.post(url, data, config).then(function(response){
+            $scope.aliasLoading = true;
+            if (response.data.createStatus === 1) {
+                $scope.aliasError = true;
+                $scope.aliasSuccess = false;
+                $scope.successMessage = response.data.successMessage;
+                $scope.loadAliases();
+            } else {
+                $scope.aliasError = false;
+                $scope.aliasSuccess = true;
+                $scope.errorMessage = response.data.error_message;
+            }
+        }, function(){
+            $scope.aliasLoading = true;
+            $scope.couldNotConnect = false;
+        });
+    };
+
+    $scope.deleteAlias = function (alias) {
+        $scope.aliasLoading = false;
+        var url = "/email/submitEmailAliasDeletion";
+        var data = { alias: alias };
+        var config = { headers: { 'X-CSRFToken': getCookie('csrftoken') } };
+        $http.post(url, data, config).then(function(response){
+            $scope.aliasLoading = true;
+            if (response.data.deleteStatus === 1) {
+                $scope.aliasError = true;
+                $scope.aliasSuccess = false;
+                $scope.successMessage = response.data.successMessage;
+                $scope.loadAliases();
+            } else {
+                $scope.aliasError = false;
+                $scope.aliasSuccess = true;
+                $scope.errorMessage = response.data.error_message;
+            }
+        }, function(){
+            $scope.aliasLoading = true;
+            $scope.couldNotConnect = false;
+        });
+    };
+});
+/* Java script for managing email aliases end */

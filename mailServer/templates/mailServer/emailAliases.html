@@ -1,0 +1,94 @@
+{% extends "baseTemplate/index.html" %}
+{% load i18n %}
+{% block title %}{% trans "Manage Email Aliases - CyberPanel" %}{% endblock %}
+{% block content %}
+    {% load static %}
+    {% get_current_language as LANGUAGE_CODE %}
+    <!-- Current language: {{ LANGUAGE_CODE }} -->
+    <div class="container">
+        <div id="page-title">
+            <h2>{% trans "Manage Email Aliases" %}</h2>
+            <p>{% trans "Create or remove email address aliases." %}</p>
+        </div>
+        <div ng-controller="emailAliases" class="panel">
+            <div class="panel-body">
+                <h3 class="content-box-header">
+                    {% trans "Manage Email Aliases" %} <img ng-hide="aliasLoading" src="{% static 'images/loading.gif' %}">
+                </h3>
+                <div class="example-box-wrapper">
+                    {% if not status %}
+                        <div class="col-md-12 text-center" style="margin-bottom: 2%;">
+                            <h3>{% trans "Postfix is disabled." %}
+                                <a href="{% url 'managePostfix' %}">
+                                    <button class="btn btn-alt btn-hover btn-blue-alt">
+                                        <span>{% trans "Enable Now" %}</span>
+                                        <i class="glyph-icon icon-arrow-right"></i>
+                                    </button>
+                                </a></h3>
+                        </div>
+                    {% else %}
+                        <form action="/" class="form-horizontal bordered-row">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{% trans "Select Domain" %}</label>
+                                <div class="col-sm-6">
+                                    <select ng-change="loadAliases()" ng-model="selectedDomain" class="form-control">
+                                        {% for items in websiteList %}
+                                            <option>{{ items }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div ng-hide="aliasBox" class="form-group">
+                                <label class="col-sm-3 control-label"></label>
+                                <div class="col-sm-4">
+                                    <div ng-hide="aliasError" class="alert alert-danger">
+                                        <p>{$ errorMessage $}</p>
+                                    </div>
+                                    <div ng-hide="aliasSuccess" class="alert alert-success">
+                                        <p>{$ successMessage $}</p>
+                                    </div>
+                                    <div ng-hide="couldNotConnect" class="alert alert-danger">
+                                        <p>{% trans "Could not connect to server. Please refresh this page." %}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div ng-hide="aliasBox" class="form-group">
+                                <div class="col-sm-4">
+                                    <input placeholder="{% trans 'Alias address' %}" type="email" class="form-control" ng-model="alias">
+                                </div>
+                                <div class="col-sm-4">
+                                    <input placeholder="{% trans 'Destination' %}" type="text" class="form-control" ng-model="destination">
+                                </div>
+                                <div class="col-sm-4">
+                                    <button style="width: 100%;" type="button" ng-click="createAlias()" class="btn btn-primary">{% trans "Create Alias" %}</button>
+                                </div>
+                            </div>
+                            <div ng-hide="aliasBox" class="form-group">
+                                <div class="col-sm-12">
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th>{% trans "ID" %}</th>
+                                            <th>{% trans "Alias" %}</th>
+                                            <th>{% trans "Destination" %}</th>
+                                            <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="record in records track by $index">
+                                            <td ng-bind="$index + 1"></td>
+                                            <td ng-bind="record.source"></td>
+                                            <td ng-bind="record.destination"></td>
+                                            <td ng-click="deleteAlias(record.source)"><img src="{% static 'images/delete.png' %}"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

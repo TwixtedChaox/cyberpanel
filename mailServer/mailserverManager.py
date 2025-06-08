@@ -1876,6 +1876,104 @@ milter_default_action = accept
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
+    ### Email aliases
+    def emailAliases(self):
+        userID = self.request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if not os.path.exists('/home/cyberpanel/postfix'):
+            proc = httpProc(self.request, 'mailServer/emailAliases.html',
+                            {"status": 0}, 'emailForwarding')
+            return proc.render()
+
+        websitesName = ACLManager.findAllSites(currentACL, userID)
+        websitesName = websitesName + ACLManager.findChildDomains(websitesName)
+
+        proc = httpProc(self.request, 'mailServer/emailAliases.html',
+                        {'websiteList': websitesName, "status": 1}, 'emailForwarding')
+        return proc.render()
+
+    def fetchEmailAliases(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('fetchStatus', 0)
+
+            data = json.loads(self.request.body)
+            domain = data['domain']
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            status, records = mailUtilities.listEmailAliases(domain)
+            if status == 1:
+                final = {'status': 1, 'fetchStatus': 1, 'error_message': 'None', 'data': json.dumps(records)}
+            else:
+                final = {'status': 0, 'fetchStatus': 0, 'error_message': records}
+            return HttpResponse(json.dumps(final))
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitEmailAliasCreation(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('createStatus', 0)
+
+            data = json.loads(self.request.body)
+            alias = data['alias'].lower()
+            destination = data['destination']
+
+            admin = Administrator.objects.get(pk=userID)
+            aliasDomain = alias.split('@')[1]
+            if ACLManager.checkOwnership(aliasDomain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            status, msg = mailUtilities.createEmailAlias(alias, destination)
+            if status == 1:
+                final = {'status': 1, 'createStatus': 1, 'successMessage': 'Successfully Created!', 'error_message': 'None'}
+            else:
+                final = {'status': 0, 'createStatus': 0, 'error_message': msg}
+            return HttpResponse(json.dumps(final))
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'createStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitEmailAliasDeletion(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('deleteStatus', 0)
+
+            data = json.loads(self.request.body)
+            alias = data['alias']
+
+            admin = Administrator.objects.get(pk=userID)
+            aliasDomain = alias.split('@')[1]
+            if ACLManager.checkOwnership(aliasDomain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            status, msg = mailUtilities.deleteEmailAlias(alias)
+            if status == 1:
+                final = {'status': 1, 'deleteStatus': 1, 'successMessage': 'Successfully deleted!', 'error_message': 'None'}
+            else:
+                final = {'status': 0, 'deleteStatus': 0, 'error_message': msg}
+            return HttpResponse(json.dumps(final))
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'deleteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
 def main():
 
     parser = argparse.ArgumentParser(description='CyberPanel')

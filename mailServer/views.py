@@ -263,4 +263,39 @@ def SaveEmailLimitsNew(request):
         return HttpResponse(json_data)
 
 
+def emailAliases(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.emailAliases()
+    except KeyError:
+        return redirect(loadLoginPage)
+
+def fetchEmailAliases(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.fetchEmailAliases()
+    except KeyError as msg:
+        data_ret = {'fetchStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+def submitEmailAliasCreation(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.submitEmailAliasCreation()
+    except KeyError as msg:
+        data_ret = {'createStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+def submitEmailAliasDeletion(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.submitEmailAliasDeletion()
+    except KeyError as msg:
+        data_ret = {'deleteStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+
 
