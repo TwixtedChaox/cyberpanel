@@ -535,6 +535,134 @@ class MailServerManager(multi.Thread):
             json_data = json.dumps(data_ret)
             return HttpResponse(json_data)
 
+    def emailAliases(self):
+        userID = self.request.session['userID']
+        currentACL = ACLManager.loadedACL(userID)
+
+        if not os.path.exists('/home/cyberpanel/postfix'):
+            proc = httpProc(self.request, 'mailServer/emailAliases.html',
+                            {"status": 0}, 'emailAliases')
+            return proc.render()
+
+        websitesName = ACLManager.findAllSites(currentACL, userID)
+        websitesName = websitesName + ACLManager.findChildDomains(websitesName)
+
+        proc = httpProc(self.request, 'mailServer/emailAliases.html',
+                        {'websiteList': websitesName, "status": 1}, 'emailAliases')
+        return proc.render()
+
+    def fetchCurrentAliases(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('fetchStatus', 0)
+
+            data = json.loads(self.request.body)
+            domain = data['domain']
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            aliases = Forwardings.objects.filter(source__endswith='@' + domain)
+
+            json_data = "["
+            checker = 0
+            id = 1
+            for items in aliases:
+                if EUsers.objects.filter(email=items.source).count() > 0:
+                    continue
+                if items.source == items.destination:
+                    continue
+                dic = {'id': id,
+                       'source': items.source,
+                       'destination': items.destination}
+
+                id = id + 1
+
+                if checker == 0:
+                    json_data = json_data + json.dumps(dic)
+                    checker = 1
+                else:
+                    json_data = json_data + ',' + json.dumps(dic)
+
+            json_data = json_data + ']'
+            final_dic = {'status': 1, 'fetchStatus': 1, 'error_message': "None", 'data': json_data}
+            final_json = json.dumps(final_dic)
+            return HttpResponse(final_json)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'fetchStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitAliasDeletion(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('deleteStatus', 0)
+
+            data = json.loads(self.request.body)
+            alias = data['alias']
+            destination = data['destination']
+            domain = alias.split('@')[1]
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            for item in Forwardings.objects.filter(source=alias, destination=destination):
+                item.delete()
+
+            data_ret = {'status': 1, 'deleteStatus': 1, 'error_message': "None", 'successMessage': 'Successfully deleted!'}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'deleteStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+    def submitAliasCreation(self):
+        try:
+            userID = self.request.session['userID']
+            currentACL = ACLManager.loadedACL(userID)
+            if ACLManager.currentContextPermission(currentACL, 'emailForwarding') == 0:
+                return ACLManager.loadErrorJson('createStatus', 0)
+
+            data = json.loads(self.request.body)
+            alias = data['alias']
+            domain = data['domain']
+            destination = data['destination']
+
+            if '@' not in alias:
+                alias = f'{alias}@{domain}'
+
+            admin = Administrator.objects.get(pk=userID)
+            if ACLManager.checkOwnership(domain, admin, currentACL) != 1:
+                return ACLManager.loadErrorJson()
+
+            if EUsers.objects.filter(email=alias).count() > 0:
+                return ACLManager.loadErrorJson('createStatus', 0)
+
+            if Forwardings.objects.filter(source=alias, destination=destination).count() > 0:
+                return ACLManager.loadErrorJson('createStatus', 0)
+
+            forwarding = Forwardings(source=alias, destination=destination)
+            forwarding.save()
+
+            data_ret = {'status': 1, 'createStatus': 1, 'error_message': "None", 'successMessage': 'Successfully Created!'}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
+        except BaseException as msg:
+            data_ret = {'status': 0, 'createStatus': 0, 'error_message': str(msg)}
+            json_data = json.dumps(data_ret)
+            return HttpResponse(json_data)
+
     def fetchEmails(self):
         try:
             userID = self.request.session['userID']

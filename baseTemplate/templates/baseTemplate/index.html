@@ -596,6 +596,11 @@
                                                    title="{% trans 'Email Forwarding' %}"><span>{% trans "Email Forwarding" %}</span></a>
                                             </li>
                                         {% endif %}
+                                        {% if admin or emailForwarding %}
+                                            <li class="emailAliases"><a href="{% url 'emailAliases' %}"
+                                                   title="{% trans 'Email Aliases' %}"><span>{% trans "Email Aliases" %}</span></a>
+                                            </li>
+                                        {% endif %}
                                         {% if admin or changeEmailPassword %}
                                             <li><a href="{% url 'changeEmailAccountPassword' %}"
                                                    title="{% trans 'Change Password' %}"><span>{% trans "Change Password" %}</span></a>

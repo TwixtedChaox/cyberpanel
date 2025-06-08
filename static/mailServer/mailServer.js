@@ -1345,3 +1345,79 @@ app.controller('listEmails', function ($scope, $http) {
 
 
 /* Java script code for List Emails Ends here */
+
+/* Java script code for email aliases */
+app.controller('emailAliases', function ($scope, $http) {
+
+    $scope.aliasDetails = true;
+    $scope.aliasLoading = true;
+    $scope.aliasList = true;
+
+    $scope.fetchAliases = function () {
+        if (!$scope.emailDomain) {
+            return;
+        }
+        $scope.aliasLoading = false;
+        $scope.aliasList = true;
+
+        var url = "/email/fetchCurrentAliases";
+        var data = {domain: $scope.emailDomain};
+        var config = {headers: {'X-CSRFToken': getCookie('csrftoken')}};
+
+        $http.post(url, data, config).then(function (response) {
+            $scope.aliasLoading = true;
+            if (response.data.fetchStatus === 1) {
+                $scope.records = JSON.parse(response.data.data);
+                $scope.aliasList = false;
+            } else {
+                new PNotify({title: 'Error!', text: response.data.error_message, type: 'error'});
+            }
+        }, function () {
+            $scope.aliasLoading = true;
+            new PNotify({title: 'Error!', text: 'Could not connect to server, please refresh this page.', type: 'error'});
+        });
+    };
+
+    $scope.createAlias = function () {
+        $scope.aliasLoading = false;
+
+        var url = "/email/submitAliasCreation";
+        var data = {domain: $scope.emailDomain, alias: $scope.aliasName, destination: $scope.destinationEmail};
+        var config = {headers: {'X-CSRFToken': getCookie('csrftoken')}};
+
+        $http.post(url, data, config).then(function (response) {
+            $scope.aliasLoading = true;
+            if (response.data.createStatus === 1) {
+                $scope.aliasName = '';
+                $scope.destinationEmail = '';
+                $scope.fetchAliases();
+            } else {
+                new PNotify({title: 'Error!', text: response.data.error_message, type: 'error'});
+            }
+        }, function () {
+            $scope.aliasLoading = true;
+            new PNotify({title: 'Error!', text: 'Could not connect to server, please refresh this page.', type: 'error'});
+        });
+    };
+
+    $scope.deleteAlias = function (source, destination) {
+        $scope.aliasLoading = false;
+
+        var url = "/email/submitAliasDeletion";
+        var data = {alias: source, destination: destination};
+        var config = {headers: {'X-CSRFToken': getCookie('csrftoken')}};
+
+        $http.post(url, data, config).then(function (response) {
+            $scope.aliasLoading = true;
+            if (response.data.deleteStatus === 1) {
+                $scope.fetchAliases();
+            } else {
+                new PNotify({title: 'Error!', text: response.data.error_message, type: 'error'});
+            }
+        }, function () {
+            $scope.aliasLoading = true;
+            new PNotify({title: 'Error!', text: 'Could not connect to server, please refresh this page.', type: 'error'});
+        });
+    };
+});
+

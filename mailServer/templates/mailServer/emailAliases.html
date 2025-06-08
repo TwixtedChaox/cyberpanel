@@ -1,0 +1,79 @@
+{% extends "baseTemplate/index.html" %}
+{% load i18n %}
+{% block title %}{% trans "Manage Email Aliases - CyberPanel" %}{% endblock %}
+{% block content %}
+{% load static %}
+<div class="container">
+    <div id="page-title">
+        <h2>{% trans "Manage Email Aliases" %}</h2>
+        <p>{% trans "Create or remove email aliases." %}</p>
+    </div>
+    <div ng-controller="emailAliases" class="panel">
+        <div class="panel-body">
+            <h3 class="content-box-header">
+                {% trans "Email Aliases" %} <img ng-hide="aliasLoading" src="{% static 'images/loading.gif' %}">
+            </h3>
+            <div class="example-box-wrapper">
+            {% if not status %}
+                <div class="col-md-12 text-center" style="margin-bottom: 2%;">
+                    <h3>{% trans "Postfix is disabled." %}</h3>
+                </div>
+            {% else %}
+                <form action="/" class="form-horizontal bordered-row panel-body">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">{% trans "Select Website" %}</label>
+                        <div class="col-sm-6">
+                            <select ng-change="fetchAliases()" ng-model="emailDomain" class="form-control">
+                                {% for items in websiteList %}
+                                    <option>{{ items }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div ng-hide="aliasDetails" class="form-group">
+                        <label class="col-sm-3 control-label">{% trans "Alias" %}</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="aliasName" placeholder="{% trans 'alias' %}">
+                        </div>
+                    </div>
+                    <div ng-hide="aliasDetails" class="form-group">
+                        <label class="col-sm-3 control-label">{% trans "Destination" %}</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" ng-model="destinationEmail" placeholder="{% trans 'Destination' %}">
+                        </div>
+                    </div>
+                    <div ng-hide="aliasDetails" class="form-group">
+                        <label class="col-sm-3 control-label"></label>
+                        <div class="col-sm-4">
+                            <button type="button" ng-click="createAlias()" class="btn btn-primary" style="width:100%;">{% trans "Create Alias" %}</button>
+                        </div>
+                    </div>
+                    <div ng-hide="aliasList" class="form-group">
+                        <div class="col-sm-12">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>{% trans "ID" %}</th>
+                                    <th>{% trans "Alias" %}</th>
+                                    <th>{% trans "Destination" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="record in records track by $index">
+                                    <td ng-bind="record.id"></td>
+                                    <td ng-bind="record.source"></td>
+                                    <td ng-bind="record.destination"></td>
+                                    <td ng-click="deleteAlias(record.source, record.destination)"><img src="{% static 'images/delete.png' %}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

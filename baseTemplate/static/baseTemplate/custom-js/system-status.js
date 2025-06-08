@@ -275,6 +275,7 @@ app.controller('adminController', function ($scope, $http, $timeout) {
 
             if (!Boolean(response.data.emailForwarding)) {
                 $('.emailForwarding').hide();
+                $('.emailAliases').hide();
             }
 
             if (!Boolean(response.data.changeEmailPassword)) {

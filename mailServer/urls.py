@@ -14,6 +14,12 @@ urlpatterns = [
     re_path(r'^fetchCurrentForwardings$', views.fetchCurrentForwardings, name='fetchCurrentForwardings'),
     re_path(r'^submitForwardDeletion$', views.submitForwardDeletion, name='submitForwardDeletion'),
 
+    ## Email Aliases
+    re_path(r'^emailAliases$', views.emailAliases, name='emailAliases'),
+    re_path(r'^fetchCurrentAliases$', views.fetchCurrentAliases, name='fetchCurrentAliases'),
+    re_path(r'^submitAliasCreation$', views.submitAliasCreation, name='submitAliasCreation'),
+    re_path(r'^submitAliasDeletion$', views.submitAliasDeletion, name='submitAliasDeletion'),
+
     ## Delete email
     re_path(r'^deleteEmailAccount$', views.deleteEmailAccount, name='deleteEmailAccount'),
     re_path(r'^getEmailsForDomain$', views.getEmailsForDomain, name='getEmailsForDomain'),
