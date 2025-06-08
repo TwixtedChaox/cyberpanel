@@ -368,6 +368,43 @@ class mailUtilities:
             return 0, str(msg)
 
     @staticmethod
+    def createEmailAlias(alias, destination):
+        try:
+            if EUsers.objects.filter(email=alias).exists():
+                raise BaseException("A mailbox with this address already exists.")
+            if Forwardings.objects.filter(source=alias, destination=destination).exists():
+                raise BaseException("Alias already exists.")
+            forwarding = Forwardings(source=alias, destination=destination)
+            forwarding.save()
+            return 1, 'None'
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + '  [createEmailAlias]')
+            return 0, str(msg)
+
+    @staticmethod
+    def deleteEmailAlias(alias):
+        try:
+            for item in Forwardings.objects.filter(source=alias):
+                item.delete()
+            return 1, 'None'
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + '  [deleteEmailAlias]')
+            return 0, str(msg)
+
+    @staticmethod
+    def listEmailAliases(domain):
+        try:
+            data = []
+            records = Forwardings.objects.filter(source__iendswith='@' + domain)
+            for fwd in records:
+                if not EUsers.objects.filter(email=fwd.source).exists() and fwd.source != fwd.destination:
+                    data.append({'source': fwd.source, 'destination': fwd.destination})
+            return 1, data
+        except BaseException as msg:
+            logging.CyberCPLogFileWriter.writeToFile(str(msg) + '  [listEmailAliases]')
+            return 0, str(msg)
+
+    @staticmethod
     def getEmailAccounts(virtualHostName):
         try:
             emailDomain = Domains.objects.get(domain=virtualHostName)
@@ -2702,6 +2739,8 @@ def main():
     parser.add_argument('--tempConfigPath', help='Temporary Configuration Path!')
     parser.add_argument('--install', help='Enable/Disable Policy Server!')
     parser.add_argument('--tempStatusPath', help='Path of temporary status file.')
+    parser.add_argument('--alias', help='Alias email address!')
+    parser.add_argument('--destination', help='Destination email address!')
 
 
 
@@ -2737,6 +2776,12 @@ def main():
         mailUtilities.changeclamavConfig("install", "changeclamavConfig")
     elif args.function == 'AfterEffects':
         mailUtilities.AfterEffects(args.domain)
+    elif args.function == 'createEmailAlias':
+        mailUtilities.createEmailAlias(args.alias, args.destination)
+    elif args.function == 'deleteEmailAlias':
+        mailUtilities.deleteEmailAlias(args.alias)
+    elif args.function == 'listEmailAliases':
+        print(json.dumps(mailUtilities.listEmailAliases(args.domain)[1]))
     elif args.function == "ResetEmailConfigurations":
         extraArgs = {'tempStatusPath': args.tempStatusPath}
         background = MailServerManagerUtils(None, 'ResetEmailConfigurations', extraArgs)
