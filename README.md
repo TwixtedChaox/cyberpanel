@@ -12,6 +12,7 @@ Web Hosting Control Panel powered by OpenLiteSpeed, designed to simplify hosting
 - 🕒 **Light-weight DNS Server** (PowerDNS).
 - 🔐 **phpMyAdmin** to manage databases (MariaDB).
 - 📧 **Email Support** (SnappyMail).
+- ➕ **Email Aliases** to redirect one address to another.
 - 🕌 **File Manager** for quick file access.
 - 🌐 **PHP Management** made easy.
 - 🔒 **Firewall** (✅ FirewallD & ConfigServer Firewall Integration).
@@ -158,6 +159,15 @@ Upgrade your CyberPanel installation using:
 
 ```bash
 sh <(curl https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgrade.sh || wget -O - https://raw.githubusercontent.com/usmannasir/cyberpanel/stable/preUpgrade.sh)
+```
+
+## ✉️ Managing Email Aliases
+
+Use the `mailUtilities.py` helper to create or remove aliases:
+
+```bash
+python plogical/mailUtilities.py createEmailAlias --alias sales@example.com --destination user@example.com
+python plogical/mailUtilities.py deleteEmailAlias --alias sales@example.com
 ```
 
 ---
