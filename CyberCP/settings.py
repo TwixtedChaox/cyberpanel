@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'filemanager',
     'manageServices',
     'pluginHolder',
+    'emailAliasPlugin',
     'emailPremium',
     'emailMarketing',
     'cloudAPI',

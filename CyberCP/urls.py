@@ -38,6 +38,7 @@ urlpatterns = [
     path('emailPremium/', include('emailPremium.urls')),
     path('manageservices/', include('manageServices.urls')),
     path('plugins/', include('pluginHolder.urls')),
+    path('emailAliases/', include('emailAliasPlugin.urls')),
     path('emailMarketing/', include('emailMarketing.urls')),
     path('cloudAPI/', include('cloudAPI.urls')),
     path('docker/', include('dockerManager.urls')),
