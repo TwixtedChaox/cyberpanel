@@ -161,6 +161,44 @@ def submitEmailForwardingCreation(request):
 
 #######
 
+def emailAliases(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.emailAliases()
+    except KeyError:
+        return redirect(loadLoginPage)
+
+def fetchCurrentAliases(request):
+    try:
+        msM = MailServerManager(request)
+        return msM.fetchCurrentAliases()
+    except KeyError as msg:
+        data_ret = {'fetchStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+def submitAliasDeletion(request):
+    try:
+
+        msM = MailServerManager(request)
+        return msM.submitAliasDeletion()
+    except KeyError as msg:
+        data_ret = {'deleteStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+def submitAliasCreation(request):
+    try:
+
+        msM = MailServerManager(request)
+        return msM.submitAliasCreation()
+    except KeyError as msg:
+        data_ret = {'createStatus': 0, 'error_message': str(msg)}
+        json_data = json.dumps(data_ret)
+        return HttpResponse(json_data)
+
+#######
+
 def changeEmailAccountPassword(request):
     try:
         msM = MailServerManager(request)
